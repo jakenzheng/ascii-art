@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"],
+        input[type="range"],
+        input[type="number"],
+        select,
+        button {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        input[type="range"] {
+            padding: 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .output-container {
+            position: relative;
+            margin-top: 20px;
+        }
+        #ascii-output {
+            background-color: #000;
+            color: #fff;
+            font-family: monospace;
+            white-space: pre;
+            overflow: auto;
+            padding: 20px;
+            border-radius: 4px;
+            min-height: 400px;
+            font-size: 12px;
+            line-height: 1;
+            resize: both;
+        }
+        .preview-container {
+            margin-bottom: 20px;
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .preview-item {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+        }
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            display: block;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+        }
+        .preview-canvas {
+            max-width: 100%;
+            max-height: 300px;
+            border: 1px solid #ddd;
+        }
+        .output-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+        .hidden {
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -20px;
+            margin-left: -20px;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .size-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .font-size-control {
+            width: 100px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #f0f0f0;
+            border-color: #ddd;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .range-with-value {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .range-with-value input[type="range"] {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .range-value {
+            width: 40px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ASCII Art Converter</h1>
+        
+        <div class="control-group">
+            <label for="image-input">Upload Image:</label>
+            <input type="file" id="image-input" accept="image/*">
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="preview">Image Preview</div>
+            <div class="tab" data-tab="background">Background Removal</div>
+            <div class="tab" data-tab="ascii">ASCII Settings</div>
+        </div>
+        
+        <!-- PREVIEW TAB -->
+        <div class="tab-content active" id="preview-tab">
+            <div class="preview-container">
+                <div class="preview-item">
+                    <h3>Original Image</h3>
+                    <img id="preview" class="preview-image hidden">
+                    <div id="image-info"></div>
+                </div>
+                <div class="preview-item">
+                    <h3>Processed Image</h3>
+                    <canvas id="processed-preview" class="preview-canvas"></canvas>
+                    <div id="processed-info"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- BACKGROUND REMOVAL TAB -->
+        <div class="tab-content" id="background-tab">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="remove-background">Remove Background:</label>
+                    <input type="checkbox" id="remove-background">
+                </div>
+                
+                <div class="control-group">
+                    <label for="threshold-method">Background Detection Method:</label>
+                    <select id="threshold-method">
+                        <option value="auto">Automatic</option>
+                        <option value="manual">Manual Threshold</option>
+                        <option value="color">Color Selection</option>
+                    </select>
+                </div>
+                
+                <div class="control-group threshold-controls" style="display: none;">
+                    <label for="threshold">Threshold Level:</label>
+                    <div class="range-with-value">
+                        <input type="range" id="threshold" min="0" max="255" value="128">
+                        <span id="threshold-value" class="range-value">128</span>
+                    </div>
+                </div>
+                
+                <div class="control-group color-controls" style="display: none;">
+                    <label for="bg-color">Background Color:</label>
+                    <input type="color" id="bg-color" value="#ffffff">
+                    <label for="color-tolerance">Color Tolerance:</label>
+                    <div class="range-with-value">
+                        <input type="range" id="color-tolerance" min="0" max="255" value="30">
+                        <span id="tolerance-value" class="range-value">30</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="edge-detection">Edge Enhancement:</label>
+                    <input type="checkbox" id="edge-detection">
+                </div>
+                
+                <div class="control-group edge-controls" style="display: none;">
+                    <label for="edge-strength">Edge Strength:</label>
+                    <div class="range-with-value">
+                        <input type="range" id="edge-strength" min="1" max="10" value="5">
+                        <span id="edge-value" class="range-value">5</span>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="smooth">Smoothing:</label>
+                    <div class="range-with-value">
+                        <input type="range" id="smooth" min="0" max="20" value="0">
+                        <span id="smooth-value" class="range-value">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="process-btn">Process Image</button>
+        </div>
+        
+        <!-- ASCII SETTINGS TAB -->
+        <div class="tab-content" id="ascii-tab">
+            <div class="controls">
+                <div class="control-group">
+                    <label for="brightness">Brightness: <span id="brightness-value">1</span></label>
+                    <input type="range" id="brightness" min="0.1" max="2" step="0.1" value="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="contrast">Contrast: <span id="contrast-value">1</span></label>
+                    <input type="range" id="contrast" min="0.1" max="2" step="0.1" value="1">
+                </div>
+                
+                <div class="control-group">
+                    <label for="resolution">Output Resolution:</label>
+                    <select id="resolution">
+                        <option value="auto" selected>Auto (Based on Image)</option>
+                        <option value="small">Small</option>
+                        <option value="medium">Medium</option>
+                        <option value="large">Large</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                
+                <div class="control-group" id="custom-resolution-controls" style="display: none;">
+                    <label for="custom-width">Width (chars):</label>
+                    <input type="number" id="custom-width" min="10" max="500" value="80">
+                    <label for="custom-height">Height (lines):</label>
+                    <input type="number" id="custom-height" min="10" max="500" value="40">
+                </div>
+                
+                <div class="control-group">
+                    <label for="character-set">Character Set:</label>
+                    <select id="character-set">
+                        <option value="standard">Standard (Complex)</option>
+                        <option value="simple">Simple</option>
+                        <option value="blocks">Blocks</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="custom-chars">Custom Characters:</label>
+                    <input type="text" id="custom-chars" placeholder="Enter characters" value="@%#*+=-:. ">
+                </div>
+                
+                <div class="control-group">
+                    <label for="invert">Invert Characters:</label>
+                    <input type="checkbox" id="invert">
+                </div>
+                
+                <div class="control-group">
+                    <label for="animate">Animate (Rotate):</label>
+                    <input type="checkbox" id="animate">
+                </div>
+                
+                <div class="control-group">
+                    <label for="animation-speed">Animation Speed: <span id="speed-value">5</span></label>
+                    <input type="range" id="animation-speed" min="1" max="10" value="5">
+                </div>
+                
+                <div class="control-group">
+                    <label for="transparent-background">Transparent Background:</label>
+                    <input type="checkbox" id="transparent-background">
+                </div>
+            </div>
+            
+            <button id="convert-btn">Convert to ASCII</button>
+        </div>
+        
+        <!-- OUTPUT SECTION -->
+        <div class="output-container">
+            <div class="spinner" id="loading"></div>
+            <pre id="ascii-output">Upload an image, process it if needed, then click "Convert to ASCII" to see the result.</pre>
+            
+            <div class="output-controls">
+                <div class="size-controls">
+                    <label for="font-size">Font Size:</label>
+                    <input type="number" id="font-size" class="font-size-control" min="6" max="24" value="12">
+                </div>
+                
+                <button id="copy-btn">Copy to Clipboard</button>
+                <button id="save-btn" class="button-secondary">Save as Text File</button>
+                <button id="stop-animation" class="button-secondary hidden">Stop Animation</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Elements - Tabs
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Elements - Preview
+        const imageInput = document.getElementById('image-input');
+        const preview = document.getElementById('preview');
+        const imageInfo = document.getElementById('image-info');
+        const processedPreviewCanvas = document.getElementById('processed-preview');
+        const processedInfo = document.getElementById('processed-info');
+        
+        // Elements - Background Removal
+        const removeBackgroundCheckbox = document.getElementById('remove-background');
+        const thresholdMethodSelect = document.getElementById('threshold-method');
+        const thresholdControls = document.querySelector('.threshold-controls');
+        const colorControls = document.querySelector('.color-controls');
+        const thresholdSlider = document.getElementById('threshold');
+        const thresholdValue = document.getElementById('threshold-value');
+        const bgColorInput = document.getElementById('bg-color');
+        const colorToleranceSlider = document.getElementById('color-tolerance');
+        const toleranceValue = document.getElementById('tolerance-value');
+        const edgeDetectionCheckbox = document.getElementById('edge-detection');
+        const edgeControls = document.querySelector('.edge-controls');
+        const edgeStrengthSlider = document.getElementById('edge-strength');
+        const edgeValue = document.getElementById('edge-value');
+        const smoothSlider = document.getElementById('smooth');
+        const smoothDisplayValue = document.getElementById('smooth-value');
+        const processBtn = document.getElementById('process-btn');
+        
+        // Elements - ASCII Settings
+        const brightnessSlider = document.getElementById('brightness');
+        const brightnessValue = document.getElementById('brightness-value');
+        const contrastSlider = document.getElementById('contrast');
+        const contrastValue = document.getElementById('contrast-value');
+        const resolutionSelect = document.getElementById('resolution');
+        const customResolutionControls = document.getElementById('custom-resolution-controls');
+        const customWidth = document.getElementById('custom-width');
+        const customHeight = document.getElementById('custom-height');
+        const characterSetSelect = document.getElementById('character-set');
+        const customCharsInput = document.getElementById('custom-chars');
+        const invertCheckbox = document.getElementById('invert');
+        const animateCheckbox = document.getElementById('animate');
+        const animationSpeedSlider = document.getElementById('animation-speed');
+        const animationSpeedValue = document.getElementById('speed-value');
+        const transparentBgCheckbox = document.getElementById('transparent-background');
+        const convertBtn = document.getElementById('convert-btn');
+        
+        // Elements - Output
+        const asciiOutput = document.getElementById('ascii-output');
+        const fontSizeInput = document.getElementById('font-size');
+        const copyBtn = document.getElementById('copy-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const stopAnimationBtn = document.getElementById('stop-animation');
+        const loadingSpinner = document.getElementById('loading');
+        
+        // Global variables
+        let originalImage = null;
+        let processedImage = null;
+        let animationInterval = null;
+        let animationAngle = 0;
+        
+        // Character sets
+        const charSets = {
+            standard: "@%#*+=-:. ",
+            simple: "#@&$%*!;:. ",
+            blocks: "█▓▒░▐▍▏ ",
+            custom: customCharsInput.value
+        };
+        
+        //==== TAB LOGIC ====
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+            });
+        });
+        
+        function toggleTab(tabName) {
+            tabs.forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            tabContents.forEach(content => {
+                content.classList.toggle('active', content.id === `${tabName}-tab`);
+            });
+        }
+        
+        //==== EVENT LISTENERS ====
+        // Image upload
+        imageInput.addEventListener('change', handleImageUpload);
+        
+        // Background removal
+        removeBackgroundCheckbox.addEventListener('change', toggleBackgroundControls);
+        thresholdMethodSelect.addEventListener('change', toggleThresholdMethod);
+        thresholdSlider.addEventListener('input', () => {
+            thresholdValue.textContent = thresholdSlider.value;
+        });
+        colorToleranceSlider.addEventListener('input', () => {
+            toleranceValue.textContent = colorToleranceSlider.value;
+        });
+        edgeDetectionCheckbox.addEventListener('change', toggleEdgeControls);
+        edgeStrengthSlider.addEventListener('input', () => {
+            edgeValue.textContent = edgeStrengthSlider.value;
+        });
+        smoothSlider.addEventListener('input', () => {
+            document.getElementById('smooth-value').textContent = smoothSlider.value;
+        });
+        processBtn.addEventListener('click', processImage);
+        
+        // ASCII
+        brightnessSlider.addEventListener('input', updateBrightnessValue);
+        contrastSlider.addEventListener('input', updateContrastValue);
+        resolutionSelect.addEventListener('change', toggleCustomResolution);
+        characterSetSelect.addEventListener('change', toggleCustomCharsField);
+        animationSpeedSlider.addEventListener('input', updateSpeedValue);
+        convertBtn.addEventListener('click', convertToAscii);
+        
+        // Output
+        fontSizeInput.addEventListener('change', updateFontSize);
+        copyBtn.addEventListener('click', copyToClipboard);
+        saveBtn.addEventListener('click', saveAsTextFile);
+        stopAnimationBtn.addEventListener('click', stopAnimation);
+        
+        //==== INITIAL SETUP ====
+        toggleBackgroundControls();
+        toggleThresholdMethod();
+        toggleEdgeControls();
+        toggleCustomResolution();
+        toggleCustomCharsField();
+        updateBrightnessValue();
+        updateContrastValue();
+        updateSpeedValue();
+        updateFontSize();
+        
+        //==== IMAGE UPLOAD HANDLER ====
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    preview.src = event.target.result;
+                    preview.classList.remove('hidden');
+                    
+                    // Display image dimensions
+                    imageInfo.textContent = `Original dimensions: ${originalImage.width} × ${originalImage.height} pixels`;
+                    
+                    // Reset processed preview
+                    processedImage = null;
+                    const ctx = processedPreviewCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, processedPreviewCanvas.width, processedPreviewCanvas.height);
+                    processedPreviewCanvas.width = 0;
+                    processedPreviewCanvas.height = 0;
+                    processedInfo.textContent = '';
+                    
+                    // Switch to preview tab
+                    toggleTab('preview');
+                };
+                originalImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        //==== BACKGROUND REMOVAL TOGGLES ====
+        function toggleBackgroundControls() {
+            const isRemoveBackground = removeBackgroundCheckbox.checked;
+            thresholdMethodSelect.disabled = !isRemoveBackground;
+            toggleThresholdMethod();
+        }
+        
+        function toggleThresholdMethod() {
+            const isRemoveBackground = removeBackgroundCheckbox.checked;
+            const method = thresholdMethodSelect.value;
+            thresholdControls.style.display = (isRemoveBackground && method === 'manual') ? 'block' : 'none';
+            colorControls.style.display = (isRemoveBackground && method === 'color') ? 'block' : 'none';
+        }
+        
+        function toggleEdgeControls() {
+            edgeControls.style.display = edgeDetectionCheckbox.checked ? 'block' : 'none';
+        }
+        
+        //==== PROCESS IMAGE (BACKGROUND REMOVAL + EDGE + SMOOTH) ====
+        function processImage() {
+            if (!originalImage) {
+                alert('Please upload an image first.');
+                return;
+            }
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            
+            // Defer actual processing slightly so the UI updates
+            setTimeout(() => {
+                // Create a working canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = originalImage.width;
+                canvas.height = originalImage.height;
+                
+                // Draw original image
+                ctx.drawImage(originalImage, 0, 0);
+                
+                let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                
+                // === 1. Background Removal ===
+                if (removeBackgroundCheckbox.checked) {
+                    const method = thresholdMethodSelect.value;
+                    if (method === 'manual') {
+                        applyThreshold(imageData, parseInt(thresholdSlider.value));
+                    } else if (method === 'color') {
+                        const bgColor = hexToRgb(bgColorInput.value);
+                        const tolerance = parseInt(colorToleranceSlider.value);
+                        removeColorBackground(imageData, bgColor, tolerance);
+                    } else {
+                        // Automatic (Otsu's method)
+                        const threshold = calculateOtsuThreshold(imageData);
+                        applyThreshold(imageData, threshold);
+                    }
+                }
+                
+                // === 2. Edge Enhancement ===
+                if (edgeDetectionCheckbox.checked) {
+                    applyEdgeDetection(imageData, parseInt(edgeStrengthSlider.value));
+                }
+                
+                // === 3. Smoothing ===
+                const smoothValue = parseInt(smoothSlider.value);
+                if (smoothValue > 0) {
+                    applySmoothing(imageData, smoothValue);
+                }
+                
+                // Place processed data back
+                ctx.putImageData(imageData, 0, 0);
+                
+                // Save for further use
+                processedImage = new Image();
+                processedImage.onload = function() {
+                    processedPreviewCanvas.width = processedImage.width;
+                    processedPreviewCanvas.height = processedImage.height;
+                    const previewCtx = processedPreviewCanvas.getContext('2d');
+                    previewCtx.drawImage(processedImage, 0, 0);
+                    
+                    processedInfo.textContent = `Processed dimensions: ${processedImage.width} × ${processedImage.height} pixels`;
+                    
+                    // Hide loading
+                    loadingSpinner.style.display = 'none';
+                    
+                    // Switch to preview tab
+                    toggleTab('preview');
+                };
+                processedImage.src = canvas.toDataURL();
+                
+            }, 50);
+        }
+        
+        //==== BACKGROUND REMOVAL HELPERS ====
+        function applyThreshold(imageData, threshold) {
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                if (avg < threshold) {
+                    // Keep as foreground
+                } else {
+                    // Make background transparent
+                    data[i + 3] = 0;
+                }
+            }
+        }
+        
+        function removeColorBackground(imageData, bgColor, tolerance) {
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                // Distance to chosen bg color
+                const distance = Math.sqrt(
+                    (r - bgColor.r) ** 2 +
+                    (g - bgColor.g) ** 2 +
+                    (b - bgColor.b) ** 2
+                );
+                if (distance < tolerance) {
+                    data[i + 3] = 0; // Make transparent
+                }
+            }
+        }
+        
+        function hexToRgb(hex) {
+            // Remove leading #
+            hex = hex.replace(/^#/, '');
+            let r = parseInt(hex.substring(0, 2), 16);
+            let g = parseInt(hex.substring(2, 4), 16);
+            let b = parseInt(hex.substring(4, 6), 16);
+            return { r, g, b };
+        }
+        
+        //==== OTSU'S THRESHOLD (from v2 logic) ====
+        function calculateOtsuThreshold(imageData) {
+            const { data, width, height } = imageData;
+            const histogram = new Array(256).fill(0);
+
+            // Build grayscale histogram
+            for (let i = 0; i < data.length; i += 4) {
+                const avg = Math.floor((data[i] + data[i+1] + data[i+2]) / 3);
+                histogram[avg]++;
+            }
+
+            const total = width * height;
+            let sum = 0;
+            for (let i = 0; i < 256; i++) {
+                sum += i * histogram[i];
+            }
+
+            let sumB = 0;
+            let wB = 0;
+            let maxVariance = 0;
+            let threshold = 0;
+
+            for (let t = 0; t < 256; t++) {
+                wB += histogram[t];
+                if (wB === 0) continue;
+                const wF = total - wB;
+                if (wF === 0) break;
+                sumB += t * histogram[t];
+                const mB = sumB / wB;
+                const mF = (sum - sumB) / wF;
+                const between = wB * wF * (mB - mF) * (mB - mF);
+                if (between > maxVariance) {
+                    maxVariance = between;
+                    threshold = t;
+                }
+            }
+            return threshold;
+        }
+        
+        //==== EDGE DETECTION (simple Sobel-based) ====
+        function applyEdgeDetection(imageData, strength) {
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+            const output = new Uint8ClampedArray(data.length);
+            
+            // For simplicity, treat each pixel as grayscale for calculating edges
+            for (let y = 1; y < height - 1; y++) {
+                for (let x = 1; x < width - 1; x++) {
+                    const idx = (y * width + x) * 4;
+                    
+                    const tl = grayAt(data, width, x-1, y-1);
+                    const t  = grayAt(data, width, x,   y-1);
+                    const tr = grayAt(data, width, x+1, y-1);
+                    const l  = grayAt(data, width, x-1, y);
+                    const c  = grayAt(data, width, x,   y);
+                    const r  = grayAt(data, width, x+1, y);
+                    const bl = grayAt(data, width, x-1, y+1);
+                    const b  = grayAt(data, width, x,   y+1);
+                    const br = grayAt(data, width, x+1, y+1);
+                    
+                    // Sobel
+                    const gx = -(tl + 2*l + bl) + (tr + 2*r + br);
+                    const gy = -(tl + 2*t + tr) + (bl + 2*b + br);
+                    let magnitude = Math.sqrt(gx * gx + gy * gy) * (strength / 5);
+                    
+                    // If original alpha > 0, then we can apply edge
+                    if (data[idx + 3] > 0) {
+                        const edgeFactor = Math.min(magnitude / 255, 1);
+                        const origFactor = 1 - edgeFactor;
+                        output[idx]     = data[idx]     * origFactor; // R
+                        output[idx + 1] = data[idx + 1] * origFactor; // G
+                        output[idx + 2] = data[idx + 2] * origFactor; // B
+                        output[idx + 3] = data[idx + 3];
+                    } else {
+                        // Keep it transparent
+                        output[idx] = 0;
+                        output[idx+1] = 0;
+                        output[idx+2] = 0;
+                        output[idx+3] = 0;
+                    }
+                }
+            }
+            
+            // Copy processed data back
+            for (let i = 0; i < data.length; i += 4) {
+                if (output[i + 3] > 0) {
+                    data[i] = output[i];
+                    data[i+1] = output[i+1];
+                    data[i+2] = output[i+2];
+                }
+            }
+            
+            function grayAt(data, width, x, y) {
+                const i = (y * width + x) * 4;
+                return (data[i] + data[i+1] + data[i+2]) / 3;
+            }
+        }
+        
+        //==== SMOOTHING (naive box blur) ====
+        // For larger images, this can be slow. You can optimize if needed.
+        function applySmoothing(imageData, radius) {
+            if (radius < 1) return;
+            
+            const { data, width, height } = imageData;
+            const tempData = new Uint8ClampedArray(data.length);
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    let rSum = 0, gSum = 0, bSum = 0, aSum = 0;
+                    let count = 0;
+                    
+                    // Box kernel
+                    for (let ky = -radius; ky <= radius; ky++) {
+                        for (let kx = -radius; kx <= radius; kx++) {
+                            const px = x + kx;
+                            const py = y + ky;
+                            if (px >= 0 && px < width && py >= 0 && py < height) {
+                                const i = (py * width + px) * 4;
+                                rSum += data[i];
+                                gSum += data[i + 1];
+                                bSum += data[i + 2];
+                                aSum += data[i + 3];
+                                count++;
+                            }
+                        }
+                    }
+                    
+                    const idx = (y * width + x) * 4;
+                    tempData[idx]     = rSum / count;
+                    tempData[idx + 1] = gSum / count;
+                    tempData[idx + 2] = bSum / count;
+                    tempData[idx + 3] = aSum / count;
+                }
+            }
+            // Copy the blurred data back into the original
+            data.set(tempData);
+        }
+        
+        //==== ASCII SETTINGS HELPERS ====
+        function updateBrightnessValue() {
+            brightnessValue.textContent = brightnessSlider.value;
+        }
+        
+        function updateContrastValue() {
+            contrastValue.textContent = contrastSlider.value;
+        }
+        
+        function toggleCustomResolution() {
+            const isCustom = resolutionSelect.value === 'custom';
+            customResolutionControls.style.display = isCustom ? 'block' : 'none';
+        }
+        
+        function toggleCustomCharsField() {
+            const useCustom = characterSetSelect.value === 'custom';
+            customCharsInput.disabled = !useCustom;
+            if (useCustom) {
+                charSets.custom = customCharsInput.value;
+            }
+        }
+        
+        function updateSpeedValue() {
+            animationSpeedValue.textContent = animationSpeedSlider.value;
+        }
+        
+        function updateFontSize() {
+            asciiOutput.style.fontSize = `${fontSizeInput.value}px`;
+        }
+        
+        //==== CONVERT TO ASCII (with optional animation) ====
+        function convertToAscii() {
+            if (!originalImage) {
+                alert('Please upload an image first.');
+                return;
+            }
+            // Stop any ongoing animation
+            stopAnimation();
+            
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            
+            // Defer so spinner can show
+            setTimeout(() => {
+                if (animateCheckbox.checked) {
+                    // Animated rotation
+                    stopAnimationBtn.classList.remove('hidden');
+                    startAnimation();
+                } else {
+                    // Just do a single conversion
+                    processImageToAscii();
+                }
+            }, 50);
+        }
+        
+        function startAnimation() {
+            animationAngle = 0;
+            const speed = 11 - parseInt(animationSpeedSlider.value); // bigger slider = faster anim
+            animationInterval = setInterval(() => {
+                processImageToAscii(animationAngle);
+                animationAngle = (animationAngle + 5) % 360;
+            }, speed * 100);
+        }
+        
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                stopAnimationBtn.classList.add('hidden');
+            }
+        }
+        
+        function processImageToAscii(rotationAngle = 0) {
+            // Pick whichever image is the "latest" to use
+            const sourceImg = processedImage || originalImage;
+            if (!sourceImg) return;
+            
+            // Create offscreen canvas
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Determine output resolution
+            const { width: outWidth, height: outHeight } = getOutputDimensions(sourceImg);
+            
+            // If rotating, we might need a bigger canvas
+            // but for simplicity, just do a naive approach:
+            if (rotationAngle !== 0) {
+                const maxDim = Math.max(outWidth, outHeight) * 1.5;
+                canvas.width = maxDim;
+                canvas.height = maxDim;
+                // Move center, rotate, then draw
+                ctx.translate(maxDim / 2, maxDim / 2);
+                ctx.rotate(rotationAngle * Math.PI / 180);
+                ctx.drawImage(sourceImg, -outWidth / 2, -outHeight / 2, outWidth, outHeight);
+                // Reset
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            } else {
+                canvas.width = outWidth;
+                canvas.height = outHeight;
+                ctx.drawImage(sourceImg, 0, 0, outWidth, outHeight);
+            }
+            
+            // Get brightness/contrast
+            const brightness = parseFloat(brightnessSlider.value);
+            const contrast = parseFloat(contrastSlider.value);
+            const chosenSet = characterSetSelect.value === 'custom' 
+                ? customCharsInput.value 
+                : charSets[characterSetSelect.value];
+            
+            // Adjust brightness/contrast
+            let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            apply
