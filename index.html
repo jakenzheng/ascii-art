@@ -1,605 +1,532 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>ASCII Art Converter</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      color: #333;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #f5f5f5;
-    }
-    h1, h2 {
-      color: #2c3e50;
-    }
-    .container {
-      background-color: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    .controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .control-group {
-      margin-bottom: 15px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input[type="file"],
-    input[type="range"],
-    input[type="number"],
-    select,
-    button {
-      width: 100%;
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-    input[type="range"] {
-      padding: 0;
-    }
-    button {
-      background-color: #3498db;
-      color: white;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #2980b9;
-    }
-    .output-container {
-      position: relative;
-      margin-top: 20px;
-    }
-    #ascii-output {
-      background-color: #000;
-      color: #fff;
-      font-family: monospace;
-      white-space: pre;
-      overflow: auto;
-      padding: 20px;
-      border-radius: 4px;
-      min-height: 400px;
-      font-size: 12px;
-      line-height: 1;
-      resize: both;
-    }
-    .preview-container {
-      margin-bottom: 20px;
-      max-width: 100%;
-      overflow: hidden;
-    }
-    #preview {
-      max-width: 300px;
-      max-height: 300px;
-      display: block;
-      margin-bottom: 10px;
-    }
-    .output-controls {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .button-secondary {
-      background-color: #7f8c8d;
-    }
-    .hidden {
-      display: none;
-    }
-    .spinner {
-      border: 4px solid rgba(0, 0, 0, 0.1);
-      border-radius: 50%;
-      border-top: 4px solid #3498db;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      margin-top: -20px;
-      margin-left: -20px;
-      display: none;
-    }
-    @keyframes spin {
-      0%   { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .size-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .font-size-control {
-      width: 100px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Art Converter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"],
+        input[type="range"],
+        input[type="number"],
+        select,
+        button {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        input[type="range"] {
+            padding: 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .output-container {
+            position: relative;
+            margin-top: 20px;
+        }
+        #ascii-output {
+            background-color: #000;
+            color: #fff;
+            font-family: monospace;
+            white-space: pre;
+            overflow: auto;
+            padding: 20px;
+            border-radius: 4px;
+            min-height: 400px;
+            font-size: 12px;
+            line-height: 1;
+            resize: both;
+        }
+        .preview-container {
+            margin-bottom: 20px;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        #preview {
+            max-width: 300px;
+            max-height: 300px;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .output-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .button-secondary {
+            background-color: #7f8c8d;
+        }
+        .hidden {
+            display: none;
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3498db;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-top: -20px;
+            margin-left: -20px;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .size-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .font-size-control {
+            width: 100px;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>ASCII Art Converter</h1>
-
-    <!-- Image Upload -->
-    <div class="control-group">
-      <label for="image-input">Upload Image:</label>
-      <input type="file" id="image-input" accept="image/*">
-      <div class="preview-container">
-        <img id="preview" class="hidden">
-        <div id="image-info"></div>
-      </div>
-    </div>
-
-    <!-- Controls -->
-    <div class="controls">
-      <div class="control-group">
-        <label for="brightness">Brightness: <span id="brightness-value">1</span></label>
-        <input type="range" id="brightness" min="0.1" max="2" step="0.1" value="1">
-      </div>
-
-      <div class="control-group">
-        <label for="contrast">Contrast: <span id="contrast-value">1</span></label>
-        <input type="range" id="contrast" min="0.1" max="2" step="0.1" value="1">
-      </div>
-
-      <div class="control-group">
-        <label for="resolution">Output Resolution: <span id="resolution-value">Auto</span></label>
-        <select id="resolution">
-          <option value="auto" selected>Auto (Based on Image)</option>
-          <option value="small">Small</option>
-          <option value="medium">Medium</option>
-          <option value="large">Large</option>
-          <option value="custom">Custom</option>
-        </select>
-      </div>
-
-      <div class="control-group" id="custom-resolution-controls" style="display: none;">
-        <label for="custom-width">Width (chars):</label>
-        <input type="number" id="custom-width" min="10" max="500" value="80">
-        <label for="custom-height">Height (lines):</label>
-        <input type="number" id="custom-height" min="10" max="500" value="40">
-      </div>
-
-      <div class="control-group">
-        <label for="character-set">Character Set:</label>
-        <select id="character-set">
-          <option value="standard">Standard (Complex)</option>
-          <option value="simple">Simple</option>
-          <option value="blocks">Blocks</option>
-          <option value="custom">Custom</option>
-        </select>
-      </div>
-
-      <div class="control-group">
-        <label for="custom-chars">Custom Characters:</label>
-        <input type="text" id="custom-chars" placeholder="Enter characters" value="@%#*+=-:. ">
-      </div>
-
-      <div class="control-group">
-        <label for="invert">Invert Characters:</label>
-        <input type="checkbox" id="invert">
-      </div>
-
-      <div class="control-group">
-        <label for="animate">Animate (Rotate):</label>
-        <input type="checkbox" id="animate">
-      </div>
-
-      <div class="control-group">
-        <label for="animation-speed">Animation Speed: <span id="speed-value">5</span></label>
-        <input type="range" id="animation-speed" min="1" max="10" value="5">
-      </div>
-    </div>
-
-    <!-- NEW BACKGROUND REMOVAL BUTTON -->
-    <div class="control-group">
-      <button id="remove-bg-btn">Remove Background</button>
-    </div>
-
-    <!-- Convert Button -->
-    <button id="convert-btn">Convert to ASCII</button>
-
-    <!-- Output -->
-    <div class="output-container">
-      <div class="spinner" id="loading"></div>
-      <pre id="ascii-output">Upload an image and click "Convert to ASCII" to see the result.</pre>
-
-      <div class="output-controls">
-        <div class="size-controls">
-          <label for="font-size">Font Size:</label>
-          <input type="number" id="font-size" class="font-size-control" min="6" max="24" value="12">
+    <div class="container">
+        <h1>ASCII Art Converter</h1>
+        
+        <div class="control-group">
+            <label for="image-input">Upload Image:</label>
+            <input type="file" id="image-input" accept="image/*">
+            <div class="preview-container">
+                <img id="preview" class="hidden">
+                <div id="image-info"></div>
+            </div>
         </div>
         
-        <button id="copy-btn">Copy to Clipboard</button>
-        <button id="save-btn" class="button-secondary">Save as Text File</button>
-        <button id="stop-animation" class="button-secondary hidden">Stop Animation</button>
-      </div>
+        <div class="controls">
+            <div class="control-group">
+                <label for="brightness">Brightness: <span id="brightness-value">1</span></label>
+                <input type="range" id="brightness" min="0.1" max="2" step="0.1" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label for="contrast">Contrast: <span id="contrast-value">1</span></label>
+                <input type="range" id="contrast" min="0.1" max="2" step="0.1" value="1">
+            </div>
+            
+            <div class="control-group">
+                <label for="resolution">Output Resolution: <span id="resolution-value">Auto</span></label>
+                <select id="resolution">
+                    <option value="auto" selected>Auto (Based on Image)</option>
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            
+            <div class="control-group" id="custom-resolution-controls" style="display: none;">
+                <label for="custom-width">Width (chars):</label>
+                <input type="number" id="custom-width" min="10" max="500" value="80">
+                <label for="custom-height">Height (lines):</label>
+                <input type="number" id="custom-height" min="10" max="500" value="40">
+            </div>
+            
+            <div class="control-group">
+                <label for="character-set">Character Set:</label>
+                <select id="character-set">
+                    <option value="standard">Standard (Complex)</option>
+                    <option value="simple">Simple</option>
+                    <option value="blocks">Blocks</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="custom-chars">Custom Characters:</label>
+                <input type="text" id="custom-chars" placeholder="Enter characters" value="@%#*+=-:. ">
+            </div>
+            
+            <div class="control-group">
+                <label for="invert">Invert Characters:</label>
+                <input type="checkbox" id="invert">
+            </div>
+            
+            <div class="control-group">
+                <label for="animate">Animate (Rotate):</label>
+                <input type="checkbox" id="animate">
+            </div>
+            
+            <div class="control-group">
+                <label for="animation-speed">Animation Speed: <span id="speed-value">5</span></label>
+                <input type="range" id="animation-speed" min="1" max="10" value="5">
+            </div>
+        </div>
+        
+        <button id="convert-btn">Convert to ASCII</button>
+        
+        <div class="output-container">
+            <div class="spinner" id="loading"></div>
+            <pre id="ascii-output">Upload an image and click "Convert to ASCII" to see the result.</pre>
+            
+            <div class="output-controls">
+                <div class="size-controls">
+                    <label for="font-size">Font Size:</label>
+                    <input type="number" id="font-size" class="font-size-control" min="6" max="24" value="12">
+                </div>
+                
+                <button id="copy-btn">Copy to Clipboard</button>
+                <button id="save-btn" class="button-secondary">Save as Text File</button>
+                <button id="stop-animation" class="button-secondary hidden">Stop Animation</button>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <script>
-    // Elements
-    const imageInput = document.getElementById('image-input');
-    const preview = document.getElementById('preview');
-    const imageInfo = document.getElementById('image-info');
-    const brightnessSlider = document.getElementById('brightness');
-    const brightnessValue = document.getElementById('brightness-value');
-    const contrastSlider = document.getElementById('contrast');
-    const contrastValue = document.getElementById('contrast-value');
-    const resolutionSelect = document.getElementById('resolution');
-    const resolutionValue = document.getElementById('resolution-value');
-    const customResolutionControls = document.getElementById('custom-resolution-controls');
-    const customWidth = document.getElementById('custom-width');
-    const customHeight = document.getElementById('custom-height');
-    const characterSetSelect = document.getElementById('character-set');
-    const customCharsInput = document.getElementById('custom-chars');
-    const invertCheckbox = document.getElementById('invert');
-    const animateCheckbox = document.getElementById('animate');
-    const animationSpeedSlider = document.getElementById('animation-speed');
-    const animationSpeedValue = document.getElementById('speed-value');
-    const convertBtn = document.getElementById('convert-btn');
-    const asciiOutput = document.getElementById('ascii-output');
-    const fontSizeInput = document.getElementById('font-size');
-    const copyBtn = document.getElementById('copy-btn');
-    const saveBtn = document.getElementById('save-btn');
-    const stopAnimationBtn = document.getElementById('stop-animation');
-    const loadingSpinner = document.getElementById('loading');
-
-    // NEW button for background removal
-    const removeBgBtn = document.getElementById('remove-bg-btn');
-
-    // Global variables
-    let originalImage = null;
-    let animationInterval = null;
-    let animationAngle = 0;
-
-    // Character sets
-    const charSets = {
-      standard: "@%#*+=-:. ",
-      simple: "#@&$%*!;:. ",
-      blocks: "█▓▒░▐▍▏ ",
-      custom: customCharsInput.value
-    };
-
-    // Event listeners
-    imageInput.addEventListener('change', handleImageUpload);
-    brightnessSlider.addEventListener('input', updateBrightnessValue);
-    contrastSlider.addEventListener('input', updateContrastValue);
-    resolutionSelect.addEventListener('change', toggleCustomResolution);
-    animationSpeedSlider.addEventListener('input', updateSpeedValue);
-    convertBtn.addEventListener('click', convertToAscii);
-    copyBtn.addEventListener('click', copyToClipboard);
-    saveBtn.addEventListener('click', saveAsTextFile);
-    stopAnimationBtn.addEventListener('click', stopAnimation);
-    characterSetSelect.addEventListener('change', toggleCustomCharsField);
-    fontSizeInput.addEventListener('change', updateFontSize);
-
-    // NEW: Remove background
-    removeBgBtn.addEventListener('click', removeBackground);
-
-    // Initialize
-    updateBrightnessValue();
-    updateContrastValue();
-    updateSpeedValue();
-    toggleCustomCharsField();
-    updateFontSize();
-
-    //==== Image Upload ====
-    function handleImageUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(event) {
-        originalImage = new Image();
-        originalImage.onload = function() {
-          preview.src = event.target.result;
-          preview.classList.remove('hidden');
-          
-          // Display image dimensions
-          imageInfo.textContent = `Original dimensions: ${originalImage.width} × ${originalImage.height} pixels`;
+    
+    <script>
+        // Elements
+        const imageInput = document.getElementById('image-input');
+        const preview = document.getElementById('preview');
+        const imageInfo = document.getElementById('image-info');
+        const brightnessSlider = document.getElementById('brightness');
+        const brightnessValue = document.getElementById('brightness-value');
+        const contrastSlider = document.getElementById('contrast');
+        const contrastValue = document.getElementById('contrast-value');
+        const resolutionSelect = document.getElementById('resolution');
+        const resolutionValue = document.getElementById('resolution-value');
+        const customResolutionControls = document.getElementById('custom-resolution-controls');
+        const customWidth = document.getElementById('custom-width');
+        const customHeight = document.getElementById('custom-height');
+        const characterSetSelect = document.getElementById('character-set');
+        const customCharsInput = document.getElementById('custom-chars');
+        const invertCheckbox = document.getElementById('invert');
+        const animateCheckbox = document.getElementById('animate');
+        const animationSpeedSlider = document.getElementById('animation-speed');
+        const animationSpeedValue = document.getElementById('speed-value');
+        const convertBtn = document.getElementById('convert-btn');
+        const asciiOutput = document.getElementById('ascii-output');
+        const fontSizeInput = document.getElementById('font-size');
+        const copyBtn = document.getElementById('copy-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const stopAnimationBtn = document.getElementById('stop-animation');
+        const loadingSpinner = document.getElementById('loading');
+        
+        // Global variables
+        let originalImage = null;
+        let animationInterval = null;
+        let animationAngle = 0;
+        
+        // Character sets
+        const charSets = {
+            standard: "@%#*+=-:. ",
+            simple: "#@&$%*!;:. ",
+            blocks: "█▓▒░▐▍▏ ",
+            custom: customCharsInput.value
         };
-        originalImage.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    //==== Background Removal ====
-    function removeBackground() {
-      if (!originalImage) {
-        alert('Please upload an image first.');
-        return;
-      }
-
-      // We'll do a quick naive background removal:
-      // If a pixel is near white, set alpha=0
-      // Adjust threshold as needed.
-      const threshold = 200;
-
-      // Create an offscreen canvas
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = originalImage.width;
-      canvas.height = originalImage.height;
-      
-      // Draw the original image
-      ctx.drawImage(originalImage, 0, 0);
-
-      // Get image data
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-
-      // Loop over each pixel
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
         
-        // If pixel is "near white," make it transparent
-        if (r > threshold && g > threshold && b > threshold) {
-          data[i + 3] = 0; // alpha = 0
+        // Event listeners
+        imageInput.addEventListener('change', handleImageUpload);
+        brightnessSlider.addEventListener('input', updateBrightnessValue);
+        contrastSlider.addEventListener('input', updateContrastValue);
+        resolutionSelect.addEventListener('change', toggleCustomResolution);
+        animationSpeedSlider.addEventListener('input', updateSpeedValue);
+        convertBtn.addEventListener('click', convertToAscii);
+        copyBtn.addEventListener('click', copyToClipboard);
+        saveBtn.addEventListener('click', saveAsTextFile);
+        stopAnimationBtn.addEventListener('click', stopAnimation);
+        characterSetSelect.addEventListener('change', toggleCustomCharsField);
+        fontSizeInput.addEventListener('change', updateFontSize);
+        
+        // Initialize
+        updateBrightnessValue();
+        updateContrastValue();
+        updateSpeedValue();
+        toggleCustomCharsField();
+        updateFontSize();
+        
+        // Functions
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    preview.src = event.target.result;
+                    preview.classList.remove('hidden');
+                    
+                    // Display image dimensions
+                    imageInfo.textContent = `Original dimensions: ${originalImage.width} × ${originalImage.height} pixels`;
+                };
+                originalImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         }
-      }
-
-      // Put data back
-      ctx.putImageData(imageData, 0, 0);
-
-      // Update the global originalImage with the new processed version
-      const newImg = new Image();
-      newImg.onload = function() {
-        originalImage = newImg; // replace global
-        preview.src = canvas.toDataURL();
-      };
-      newImg.src = canvas.toDataURL();
-
-      alert('Background removed (all pixels near white set to transparent).');
-    }
-
-    //==== Brightness/Contrast ====
-    function updateBrightnessValue() {
-      brightnessValue.textContent = brightnessSlider.value;
-    }
-
-    function updateContrastValue() {
-      contrastValue.textContent = contrastSlider.value;
-    }
-
-    //==== Resolution ====
-    function toggleCustomResolution() {
-      const isCustom = resolutionSelect.value === 'custom';
-      customResolutionControls.style.display = isCustom ? 'block' : 'none';
-      resolutionValue.textContent = resolutionSelect.options[resolutionSelect.selectedIndex].text;
-    }
-
-    //==== Character Set ====
-    function toggleCustomCharsField() {
-      customCharsInput.disabled = characterSetSelect.value !== 'custom';
-      if (characterSetSelect.value === 'custom') {
-        charSets.custom = customCharsInput.value;
-      }
-    }
-
-    //==== Animation Speed ====
-    function updateSpeedValue() {
-      animationSpeedValue.textContent = animationSpeedSlider.value;
-    }
-
-    //==== Font Size ====
-    function updateFontSize() {
-      asciiOutput.style.fontSize = `${fontSizeInput.value}px`;
-    }
-
-    //==== Convert to ASCII (with optional animation) ====
-    function convertToAscii() {
-      if (!originalImage) {
-        alert('Please upload an image first.');
-        return;
-      }
-
-      // Stop any ongoing animation
-      stopAnimation();
-
-      // Show loading spinner
-      loadingSpinner.style.display = 'block';
-
-      // Allow the UI to update
-      setTimeout(() => {
-        if (animateCheckbox.checked) {
-          // Start animation
-          stopAnimationBtn.classList.remove('hidden');
-          startAnimation();
-        } else {
-          // One-time conversion
-          processImageToAscii();
+        
+        function updateBrightnessValue() {
+            brightnessValue.textContent = brightnessSlider.value;
         }
-      }, 50);
-    }
-
-    function startAnimation() {
-      animationAngle = 0;
-      const speed = 11 - parseInt(animationSpeedSlider.value); // Invert so higher value = faster
-      
-      animationInterval = setInterval(() => {
-        processImageToAscii(animationAngle);
-        animationAngle = (animationAngle + 5) % 360;
-      }, speed * 100);
-    }
-
-    function stopAnimation() {
-      if (animationInterval) {
-        clearInterval(animationInterval);
-        animationInterval = null;
-        stopAnimationBtn.classList.add('hidden');
-      }
-    }
-
-    function getOutputDimensions() {
-      if (!originalImage) return { width: 80, height: 40 };
-      
-      const aspectRatio = originalImage.height / originalImage.width;
-      let width, height;
-      
-      // Calculate dimensions based on selection
-      switch(resolutionSelect.value) {
-        case 'small':
-          width = 60;
-          height = Math.round(width * aspectRatio * 0.5);
-          break;
-        case 'medium':
-          width = 100;
-          height = Math.round(width * aspectRatio * 0.5);
-          break;
-        case 'large':
-          width = 160;
-          height = Math.round(width * aspectRatio * 0.5);
-          break;
-        case 'custom':
-          width = parseInt(customWidth.value);
-          height = parseInt(customHeight.value);
-          break;
-        case 'auto':
-        default:
-          // Scale based on image size but with reasonable limits
-          width = Math.min(Math.max(originalImage.width / 8, 40), 200);
-          height = Math.round(width * aspectRatio * 0.5);
-          break;
-      }
-      
-      return { width: Math.round(width), height: Math.round(height) };
-    }
-
-    function processImageToAscii(rotationAngle = 0) {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Get settings
-      const brightness = parseFloat(brightnessSlider.value);
-      const contrast = parseFloat(contrastSlider.value);
-      const characterSet = characterSetSelect.value === 'custom' 
-        ? customCharsInput.value 
-        : charSets[characterSetSelect.value];
-      const invert = invertCheckbox.checked;
-      
-      // Get output dimensions
-      const outputDimensions = getOutputDimensions();
-      const imgWidth = outputDimensions.width;
-      const imgHeight = outputDimensions.height;
-      
-      // Set canvas dimensions
-      canvas.width = imgWidth;
-      canvas.height = imgHeight;
-      
-      // Apply rotation if animating
-      if (rotationAngle !== 0) {
-        // Save the original dimensions
-        const originalWidth = imgWidth;
-        const originalHeight = imgHeight;
         
-        // Set canvas to handle rotation
-        const maxDim = Math.max(originalWidth, originalHeight) * 1.5;
-        canvas.width = maxDim;
-        canvas.height = maxDim;
-        
-        // Translate to center and rotate
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate((rotationAngle * Math.PI) / 180);
-        ctx.drawImage(
-          originalImage,
-          -originalWidth / 2,
-          -originalHeight / 2,
-          originalWidth,
-          originalHeight
-        );
-        
-        // Reset transform
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-      } else {
-        // Normal drawing without rotation
-        ctx.drawImage(originalImage, 0, 0, imgWidth, imgHeight);
-      }
-      
-      // Apply brightness and contrast
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const data = imageData.data;
-      
-      // Helper function for pixel adjustment
-      function adjustPixel(pixel) {
-        // Apply contrast
-        let adjusted = (pixel - 128) * contrast + 128;
-        // Apply brightness
-        adjusted = adjusted * brightness;
-        // Clamp values
-        return Math.max(0, Math.min(255, adjusted));
-      }
-      
-      // Apply brightness and contrast to image data
-      for (let i = 0; i < data.length; i += 4) {
-        data[i]   = adjustPixel(data[i]);     // R
-        data[i+1] = adjustPixel(data[i+1]);   // G
-        data[i+2] = adjustPixel(data[i+2]);   // B
-      }
-      
-      ctx.putImageData(imageData, 0, 0);
-      
-      // Convert to ASCII
-      let asciiResult = '';
-      
-      // Use a consistent pixel sampling approach
-      for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-          // Get pixel data
-          const pixelData = ctx.getImageData(x, y, 1, 1).data;
-          // Convert to grayscale
-          const grayscale = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
-          // Map grayscale to character
-          const chars = invert ? characterSet : characterSet.split('').reverse().join('');
-          const charIndex = Math.floor((grayscale / 255) * (chars.length - 1));
-          asciiResult += chars[charIndex];
+        function updateContrastValue() {
+            contrastValue.textContent = contrastSlider.value;
         }
-        asciiResult += '\n';
-      }
-      
-      // Display result
-      asciiOutput.textContent = asciiResult;
-      
-      // Hide loading spinner
-      loadingSpinner.style.display = 'none';
-    }
-
-    //==== Copy / Save ====
-    function copyToClipboard() {
-      const textArea = document.createElement('textarea');
-      textArea.value = asciiOutput.textContent;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      
-      alert('ASCII art copied to clipboard!');
-    }
-
-    function saveAsTextFile() {
-      const text = asciiOutput.textContent;
-      const blob = new Blob([text], { type: 'text/plain' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = 'ascii-art.txt';
-      link.click();
-    }
-  </script>
+        
+        function updateSpeedValue() {
+            animationSpeedValue.textContent = animationSpeedSlider.value;
+        }
+        
+        function toggleCustomResolution() {
+            const isCustom = resolutionSelect.value === 'custom';
+            customResolutionControls.style.display = isCustom ? 'block' : 'none';
+            resolutionValue.textContent = resolutionSelect.options[resolutionSelect.selectedIndex].text;
+        }
+        
+        function toggleCustomCharsField() {
+            customCharsInput.disabled = characterSetSelect.value !== 'custom';
+            if (characterSetSelect.value === 'custom') {
+                charSets.custom = customCharsInput.value;
+            }
+        }
+        
+        function updateFontSize() {
+            asciiOutput.style.fontSize = `${fontSizeInput.value}px`;
+        }
+        
+        function convertToAscii() {
+            if (!originalImage) {
+                alert('Please upload an image first.');
+                return;
+            }
+            
+            // Stop any ongoing animation
+            stopAnimation();
+            
+            // Show loading spinner
+            loadingSpinner.style.display = 'block';
+            
+            // Allow the UI to update
+            setTimeout(() => {
+                if (animateCheckbox.checked) {
+                    // Start animation
+                    stopAnimationBtn.classList.remove('hidden');
+                    startAnimation();
+                } else {
+                    // One-time conversion
+                    processImageToAscii();
+                }
+            }, 50);
+        }
+        
+        function startAnimation() {
+            animationAngle = 0;
+            const speed = 11 - parseInt(animationSpeedSlider.value); // Invert so higher value = faster
+            
+            animationInterval = setInterval(() => {
+                processImageToAscii(animationAngle);
+                animationAngle = (animationAngle + 5) % 360;
+            }, speed * 100);
+        }
+        
+        function stopAnimation() {
+            if (animationInterval) {
+                clearInterval(animationInterval);
+                animationInterval = null;
+                stopAnimationBtn.classList.add('hidden');
+            }
+        }
+        
+        function getOutputDimensions() {
+            if (!originalImage) return { width: 80, height: 40 };
+            
+            const aspectRatio = originalImage.height / originalImage.width;
+            let width, height;
+            
+            // Calculate dimensions based on selection
+            switch(resolutionSelect.value) {
+                case 'small':
+                    width = 60;
+                    height = Math.round(width * aspectRatio * 0.5);
+                    break;
+                case 'medium':
+                    width = 100;
+                    height = Math.round(width * aspectRatio * 0.5);
+                    break;
+                case 'large':
+                    width = 160;
+                    height = Math.round(width * aspectRatio * 0.5);
+                    break;
+                case 'custom':
+                    width = parseInt(customWidth.value);
+                    height = parseInt(customHeight.value);
+                    break;
+                case 'auto':
+                default:
+                    // Scale based on image size but with reasonable limits
+                    width = Math.min(Math.max(originalImage.width / 8, 40), 200);
+                    height = Math.round(width * aspectRatio * 0.5);
+                    break;
+            }
+            
+            return { width: Math.round(width), height: Math.round(height) };
+        }
+        
+        function processImageToAscii(rotationAngle = 0) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Get settings
+            const brightness = parseFloat(brightnessSlider.value);
+            const contrast = parseFloat(contrastSlider.value);
+            const characterSet = characterSetSelect.value === 'custom' 
+                ? customCharsInput.value 
+                : charSets[characterSetSelect.value];
+            const invert = invertCheckbox.checked;
+            
+            // Get output dimensions
+            const outputDimensions = getOutputDimensions();
+            const imgWidth = outputDimensions.width;
+            const imgHeight = outputDimensions.height;
+            
+            // Set canvas dimensions
+            canvas.width = imgWidth;
+            canvas.height = imgHeight;
+            
+            // Apply rotation if animating
+            if (rotationAngle !== 0) {
+                // Save the original dimensions
+                const originalWidth = imgWidth;
+                const originalHeight = imgHeight;
+                
+                // Set canvas to handle rotation
+                const maxDim = Math.max(originalWidth, originalHeight) * 1.5;
+                canvas.width = maxDim;
+                canvas.height = maxDim;
+                
+                // Translate to center and rotate
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate((rotationAngle * Math.PI) / 180);
+                ctx.drawImage(
+                    originalImage,
+                    -originalWidth / 2,
+                    -originalHeight / 2,
+                    originalWidth,
+                    originalHeight
+                );
+                
+                // Reset transform
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+            } else {
+                // Normal drawing without rotation
+                ctx.drawImage(originalImage, 0, 0, imgWidth, imgHeight);
+            }
+            
+            // Apply brightness and contrast
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            // Helper function for pixel adjustment
+            function adjustPixel(pixel) {
+                // Apply contrast
+                let adjusted = (pixel - 128) * contrast + 128;
+                // Apply brightness
+                adjusted = adjusted * brightness;
+                // Clamp values
+                return Math.max(0, Math.min(255, adjusted));
+            }
+            
+            // Apply brightness and contrast to image data
+            for (let i = 0; i < data.length; i += 4) {
+                data[i] = adjustPixel(data[i]);         // R
+                data[i + 1] = adjustPixel(data[i + 1]); // G
+                data[i + 2] = adjustPixel(data[i + 2]); // B
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            
+            // Convert to ASCII
+            let asciiResult = '';
+            
+            // Use a consistent pixel sampling approach
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    // Get pixel data
+                    const pixelData = ctx.getImageData(x, y, 1, 1).data;
+                    // Convert to grayscale
+                    const grayscale = (pixelData[0] + pixelData[1] + pixelData[2]) / 3;
+                    // Map grayscale to character
+                    const chars = invert ? characterSet : characterSet.split('').reverse().join('');
+                    const charIndex = Math.floor((grayscale / 255) * (chars.length - 1));
+                    asciiResult += chars[charIndex];
+                }
+                asciiResult += '\n';
+            }
+            
+            // Display result
+            asciiOutput.textContent = asciiResult;
+            
+            // Hide loading spinner
+            loadingSpinner.style.display = 'none';
+        }
+        
+        function copyToClipboard() {
+            const textArea = document.createElement('textarea');
+            textArea.value = asciiOutput.textContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+            
+            alert('ASCII art copied to clipboard!');
+        }
+        
+        function saveAsTextFile() {
+            const text = asciiOutput.textContent;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ascii-art.txt';
+            link.click();
+        }
+    </script>
 </body>
 </html>
